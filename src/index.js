@@ -1,11 +1,13 @@
 import * as PIXI from 'pixi.js';
 import io from 'socket.io-client';
 import { Howl, Howler } from 'howler';
+import { getRandomInt, nonRepeatRandom } from './helper'
 const socket = io('http://localhost:4000');
 
 console.log("started")
 var direction = "";
 socket.on("direction", (data) => {
+    console.log("received direction " + data)
     direction = data;
 })
 
@@ -63,15 +65,31 @@ bTex.push(PIXI.Texture.from('/assets/boaz9.png'))
 bTex.push(PIXI.Texture.from('/assets/boaz10.png'))
 bTex.push(PIXI.Texture.from('/assets/boaz11.png'))
 
+var bTexRandom = nonRepeatRandom(bTex);
+
 const tTex = [];
 tTex.push(PIXI.Texture.from('/assets/elmo.png'))
 tTex.push(PIXI.Texture.from('/assets/lilo.png'))
 tTex.push(PIXI.Texture.from('/assets/saitama.png'))
 tTex.push(PIXI.Texture.from('/assets/stitch.png'))
 tTex.push(PIXI.Texture.from('/assets/cyborg.png'))
+tTex.push(PIXI.Texture.from('/assets/robin.png'))
+tTex.push(PIXI.Texture.from('/assets/beastboy.png'))
+tTex.push(PIXI.Texture.from('/assets/raven.png'))
+tTex.push(PIXI.Texture.from('/assets/starfire.png'))
+tTex.push(PIXI.Texture.from('/assets/totoro.png'))
+tTex.push(PIXI.Texture.from('/assets/totoro2.png'))
+tTex.push(PIXI.Texture.from('/assets/totoro3.png'))
+tTex.push(PIXI.Texture.from('/assets/totoro4.png'))
+tTex.push(PIXI.Texture.from('/assets/totoro5.png'))
+tTex.push(PIXI.Texture.from('/assets/totoro6.png'))
+tTex.push(PIXI.Texture.from('/assets/snoopy.png'))
+tTex.push(PIXI.Texture.from('/assets/cookiemonster.png'))
 
-var boaz = PIXI.Sprite.from(getRandomTexture(bTex));
-const tzruya = PIXI.Sprite.from(getRandomTexture(tTex));
+var tTexRandom = nonRepeatRandom(tTex)
+
+var boaz = PIXI.Sprite.from(bTexRandom.next());
+const tzruya = PIXI.Sprite.from(tTexRandom.next());
 
 // center the sprite's anchor point
 boaz.anchor.set(0.5);
@@ -91,7 +109,7 @@ while (testForAABB(boaz, tzruya)) {
     tzruya.y = loc.y;
 }
 
-console.log()
+var spriteGoal = newRandomLocation(tzruya)
 
 
 app.stage.addChild(boaz);
@@ -121,6 +139,7 @@ app.ticker.add((delta) => {
     var moving = false;
     var x = boaz.position.x;
     var y = boaz.position.y;
+ 
     if (direction === "centerleft") {
         x = boaz.position.x - speed * delta;
         if (x < boazBounds.width / 2) {
@@ -158,10 +177,28 @@ app.ticker.add((delta) => {
 
     }
 
+    if (spriteGoal.x != tzruya.position.x) {
+        var spriteDirection = 1;
+
+        if(spriteGoal.x < tzruya.position.x){
+            spriteDirection = -1;
+        }
+
+
+        tzruya.position.set(tzruya.position.x + spriteDirection * (speed * delta), tzruya.position.y)
+    }
+
+    console.log(tzruya.position)
+    console.log(spriteGoal)
+
+    if(spriteGoal.x + speed * delta > tzruya.position.x && spriteGoal.x - speed * delta < tzruya.position.x   || spriteGoal.x === tzruya.position.x  ){
+        spriteGoal = newRandomLocation(tzruya)
+    }
+
 
     if (testForAABB(boaz, tzruya)) {
-        boaz.texture = getRandomTexture(bTex);
-        tzruya.texture = getRandomTexture(tTex);
+        boaz.texture = bTexRandom.next();
+        tzruya.texture = tTexRandom.next();
         counter++;
 
         basicText.text = generateText(counter)
@@ -174,11 +211,7 @@ app.ticker.add((delta) => {
 });
 
 
-function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-}
+
 
 function newRandomLocation(object) {
 

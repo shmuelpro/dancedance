@@ -11,6 +11,7 @@ io.on('connection', function (socket) {
     console.log('a user connected');
 
     pad.startPad((state) => {
+        console.log("emitting " + state)
         socket.emit('direction', state);
     })
 
